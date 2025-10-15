@@ -1,3 +1,5 @@
+## NAME : K.GOUTHAM
+## REG NO : 212223110019
 # Uploading temperature sensor data in Thing Speak cloud
 
 # AIM:
@@ -71,10 +73,70 @@ Automatically act on your data and communicate using third-party services like T
 
 
 # PROGRAM:
+```
+#include "DHT.h"
+#include <WiFi.h>
+#include <ThingSpeak.h>
 
+const int out = 2;
+float Temperature = 0;
+float Humidity = 0;
+
+WiFiClient client;               // fixed: WiFiClient (was WifiClient)
+char ssid[] = "***";
+char password[] = "1223334444";
+DHT dht(out, DHT11);
+
+unsigned long myChannelField = 3087424; // fixed case to match usage below
+const int TemperatureField = 1;         // renamed to avoid conflict with float Temperature
+const int HumidityField = 2;
+const char* myWriteAPIKey = "BFXXUW4TIO29XKMS";
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+  pinMode(out, INPUT);
+  ThingSpeak.begin(client); // initialize ThingSpeak client
+}
+
+void loop() {
+  if (WiFi.status() != WL_CONNECTED) {            // fixed: WiFi (not Wifi)
+    Serial.print("Attempting to connect to ssid");
+    Serial.println(ssid);
+
+    while (WiFi.status() != WL_CONNECTED) {
+      WiFi.begin(ssid, password);
+      Serial.print(".");
+      delay(5000);
+    }
+    Serial.println("\nConnected");
+  }
+
+  Temperature = dht.readTemperature();
+  Humidity = dht.readHumidity();
+
+  Serial.print("Temperature: ");
+  Serial.print(Temperature);
+  Serial.println(" C");
+
+  Serial.print("Humidity: ");
+  Serial.print(Humidity);
+  Serial.println(" %"); // changed unit to % (DHT returns relative humidity)
+
+  delay(3000);
+
+  // Use the same field identifiers you defined above and your global vars
+  ThingSpeak.setField(TemperatureField, Temperature);
+  ThingSpeak.setField(HumidityField, Humidity);
+  ThingSpeak.writeFields(myChannelField, myWriteAPIKey); // send fields to ThingSpeak
+  delay(5000);
+}
+```
 # CIRCUIT DIAGRAM:
+![WhatsApp Image 2025-10-15 at 09 13 58_9c6e4dc9](https://github.com/user-attachments/assets/a5844423-7c7f-4cfc-8d47-6ce9062782c3)
 
 # OUTPUT:
+<img width="1200" height="790" alt="image" src="https://github.com/user-attachments/assets/14cba0aa-68d6-4969-a41e-196418264d48" />
 
 # RESULT:
 
